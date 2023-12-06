@@ -1,12 +1,12 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import pool from '../config/connection';
 import bcrypt from 'bcrypt';
-import { createToken } from '../services/auth';
+import { authToken, createToken } from '../services/auth';
 
 const authRoutes = express.Router();
 
 // Login
-authRoutes.post('/login', async (req, res) => {
+authRoutes.post('/login', async (req: Request, res: Response) => {
     try {
         const {email, password} = req.body;
         
@@ -20,19 +20,19 @@ authRoutes.post('/login', async (req, res) => {
                 });
                 res.send(token).status(200);
             }
-            else res.send('Incorrect password!');
+            else res.send('Incorrect password!').status(400);
         }
         else 
-            res.send('User not found!');
+            res.send('User not found!').status(400);
     } catch (error) {
         throw error;
     }
 });
 
 // Logout
-authRoutes.get('/logout', (req, res) => {
+authRoutes.get('/logout', authToken, (req: Request, res: Response) => {
     res.clearCookie('token');
-    res.send({message: 'token removed'});
+    res.send({message: 'token removed'}).status(200);
 });
 
 

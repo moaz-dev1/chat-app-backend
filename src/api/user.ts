@@ -1,12 +1,13 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import pool from '../config/connection';
 import User from '../models/user';
 import bcrypt from 'bcrypt';
+import { authToken } from '../services/auth';
 
 const userRoutes = express.Router();
 
 // Get all users
-userRoutes.get('/', async (req, res) => {
+userRoutes.get('/', authToken, async (req:any, res:any) => {
     try {
         const result = await pool.query('SELECT * FROM users ORDER BY created_date');
         res.send(result.rows).status(200);
@@ -16,7 +17,7 @@ userRoutes.get('/', async (req, res) => {
 });
 
 // Create new user
-userRoutes.post('/', async (req, res) => {
+userRoutes.post('/', authToken, async (req: Request, res: Response) => {
     try {
         const newUser: User = req.body;
         const salt = await bcrypt.genSalt();
@@ -34,10 +35,10 @@ userRoutes.post('/', async (req, res) => {
 });
 
 // Get user info
-userRoutes.get('/:id', async (req, res) => {
-    const userId = req.params.id;
+userRoutes.get('/:id', authToken, async (req: Request, res: Response) => {
     try {
-        const result = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+        const id = req.params.id;
+        const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
         res.send(result.rows).status(200);
     } catch (error) {
         throw error;
@@ -45,19 +46,35 @@ userRoutes.get('/:id', async (req, res) => {
 });
 
 // Update user info
-userRoutes.post('/:id', async (req, res) => {
-    const userInfo: User = req.body;
+userRoutes.put('/:id', authToken, async (req: Request, res: Response) => {
     try {
-        // const result = pool.query('UPDATE users SET firstName, lastName, password, email')
+        const id = req.params.id;
+        const userInfo: User = req.body;
+        const result = await pool.query('UPDATE users SET first_name = $1, last_name = $2, password = $3, email = $4 WHERE id = $5', [
+            userInfo.firstName,
+            userInfo.lastName,
+            userInfo.password,
+            userInfo.email,
+            id
+        ]);
+
+        if(result)
+            res.send({message: "User info updated successfully"}).status(200);
+        else 
+            res.send({message: "User not found"}).status(400);
     } catch (error) {
         throw error;
     }
 });
 
 // Delete user
-userRoutes.delete('/:id', async (req, res) => {
+userRoutes.delete('/:id', authToken, async (req: Request, res: Response) => {
     try {
-        
+        const id = req.params.id;
+        const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        if(result) 
+            res.send({message: "User detelted successfully"}).status(200);
+        else res.send({message: "User not found"}).status(400);
     } catch (error) {
         throw error;
     }
