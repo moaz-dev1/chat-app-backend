@@ -1,9 +1,12 @@
+import PrivateRoom from "./room";
+import PublicRoom from "./group";
+import User from "./user";
+
 export default interface Message {
-    id?: number;
-    senderID: number;
-    receiverID: number;
-    senderName: string;
-    receiverName: string;
-    body: string;
-    sentDate: Date;
+    id: number;
+    sender: User;
+    receiver: User;
+    content: string;
+    sentTime: Date;
+    room: PrivateRoom | PublicRoom;
 }

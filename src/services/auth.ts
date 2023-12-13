@@ -10,13 +10,13 @@ function createToken(id: string) {
     }
 }
 
-// Check if the token is valid
+// Check if token is valid
 function authToken(req: Request, res: Response, next: NextFunction) {
     try {
         if(req.cookies.token) {
             jwt.verify(req.cookies.token, 'secret token', (error: any, decoded: any) => {
-                if(error) return res.send({message: "Unauthorized"}).status(400);
-                console.log("Authinticated")
+                if(error) 
+                    return res.send({message: "Unauthorized"}).status(400);
                 next();
             });
         } else res.send({message: "Unauthorized"}).status(400);

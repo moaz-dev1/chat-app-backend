@@ -7,9 +7,9 @@ import { authToken } from '../services/auth';
 const userRoutes = express.Router();
 
 // Get all users
-userRoutes.get('/', authToken, async (req:any, res:any) => {
+userRoutes.get('/', authToken, async (req:Request, res:Response) => {
     try {
-        const result = await pool.query('SELECT * FROM users ORDER BY created_date');
+        const result = await pool.query('SELECT * FROM users ORDER BY created_time');
         res.send(result.rows).status(200);
     } catch (error) {
         throw error;
@@ -21,10 +21,11 @@ userRoutes.post('/', authToken, async (req: Request, res: Response) => {
     try {
         const newUser: User = req.body;
         const salt = await bcrypt.genSalt();
-        newUser.password = await bcrypt.hash(newUser.password, salt);    
+        newUser.password = await bcrypt.hash(newUser.password, salt);
+        newUser.createdTime = new Date();
 
         const result = await pool.query(
-            'INSERT INTO users (first_name, last_name, password, email, created_date) VALUES ($1, $2, $3, $4, $5)',
+            'INSERT INTO users (first_name, last_name, password, email, created_time) VALUES ($1, $2, $3, $4, $5)',
             Object.values(newUser)
         );
 
@@ -50,6 +51,10 @@ userRoutes.put('/:id', authToken, async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
         const userInfo: User = req.body;
+
+        const salt = await bcrypt.genSalt();
+        userInfo.password = await bcrypt.hash(userInfo.password, salt);
+
         const result = await pool.query('UPDATE users SET first_name = $1, last_name = $2, password = $3, email = $4 WHERE id = $5', [
             userInfo.firstName,
             userInfo.lastName,

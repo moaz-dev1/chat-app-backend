@@ -2,22 +2,21 @@ import http from "http";
 import { Server as SocketIOServer, Socket } from "socket.io";
 import express from "express";
 import User from "../models/user";
+import Message from "../models/message";
+import Room from "../models/room";
 
 const PORT = process.env.SOCKET_PORT || 3000;
 const app = express();
 
 
-const server = http.createServer(app);
-const io = new SocketIOServer(server, {
+const httpServer = http.createServer(app);
+
+const io = new SocketIOServer(httpServer, {
     cors: {
       origin: "http://localhost:3000",
       methods: ["GET", "POST"],
       credentials: true,
-    }, 
-});
-
-io.on('connection', (socket) => {
-    console.log(socket);
+    },
 });
 
 let clientSocketId: any[] = [];
@@ -58,12 +57,12 @@ function handleLogin(socket: Socket) {
   
 function handleRoomCreation(socket: Socket) {
     try {
-        socket.on('create room', (data: any) => {
-            socket.join(data.room); 
-            const userSocketId = getSocketId(data.receiverID);
+        socket.on('create room', (room: Room) => {
+            socket.join(String(room.id));
+            const userSocketId = getSocketId(room.id);
             if(userSocketId) {
-                socket.broadcast.to(userSocketId).emit('invite', data.room);
-                console.log("Room was created " + data.room);
+                socket.broadcast.to(userSocketId).emit('invite', room.id);
+                console.log("Room was created with id: " + room.id);
             }
             else 
                 console.log("Cannot find Socket Id");
@@ -75,8 +74,8 @@ function handleRoomCreation(socket: Socket) {
   
 function handleJoinRoom(socket: Socket) {
     try {
-        socket.on('join', (room: any) => {
-            socket.join(room);
+        socket.on('join', (room: Room) => {
+            socket.join(String(room.id));
             // console.log("Joined Successfully to room: " + room);
         });
     } catch (error) {
@@ -86,8 +85,8 @@ function handleJoinRoom(socket: Socket) {
   
 function handleMessage(socket: Socket) {
     try {
-        socket.on('message to server', (message: any) => {
-            io.to(message.room).emit('message to client', message);
+        socket.on('message to server', (message: Message) => {
+            io.to(String(message.room.id)).emit('message to client', message);
         });
     } catch (error) {
         throw error;
@@ -107,6 +106,6 @@ function handleDisconnect(socket: Socket) {
     }
 }
   
-server.listen(PORT, () => console.log("Live..."));
+httpServer.listen(PORT, () => console.log("Live..."));
 
 
