@@ -64,9 +64,9 @@ userRoutes.put('/:id', authToken, async (req: Request, res: Response) => {
         ]);
 
         if(result)
-            res.send({message: "User info updated successfully"}).status(200);
+            res.send({message: 'User info updated successfully'}).status(200);
         else 
-            res.send({message: "User not found"}).status(400);
+            res.send({message: 'User not found'}).status(400);
     } catch (error) {
         throw error;
     }
@@ -78,8 +78,8 @@ userRoutes.delete('/:id', authToken, async (req: Request, res: Response) => {
         const id = req.params.id;
         const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
         if(result) 
-            res.send({message: "User detelted successfully"}).status(200);
-        else res.send({message: "User not found"}).status(400);
+            res.send({message: 'User detelted successfully'}).status(200);
+        else res.send({message: 'User not found'}).status(400);
     } catch (error) {
         throw error;
     }

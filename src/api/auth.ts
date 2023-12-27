@@ -15,9 +15,7 @@ authRoutes.post('/login', async (req: Request, res: Response) => {
         if(result.rowCount) {
             if(await bcrypt.compare(password, result.rows[0].password)) {
                 const token = createToken(result.rows[0].id);
-                res.cookie('token', token, {
-                    maxAge: 10000 * 24 * 60 * 60,
-                });
+                res.setHeader('token', token);
                 res.send(token).status(200);
             }
             else res.send('Incorrect password!').status(400);

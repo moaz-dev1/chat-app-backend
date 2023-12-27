@@ -1,6 +1,6 @@
-import PrivateRoom from "./room";
-import PublicRoom from "./group";
 import User from "./user";
+import Room from "./room";
+import Group from "./group";
 
 export default interface Message {
     id: number;
@@ -8,5 +8,5 @@ export default interface Message {
     receiver: User;
     content: string;
     sentTime: Date;
-    room: PrivateRoom | PublicRoom;
+    room: Room | Group;
 }

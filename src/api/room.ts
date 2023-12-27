@@ -9,7 +9,18 @@ app.use(express.json());
 // Get all rooms
 roomRoutes.get('/', authToken, async (req: Request, res: Response) => {
     try {
-        const result = await pool.query('SELECT * FROM rooms ORDER BY created_date');
+        const result = await pool.query('SELECT * FROM rooms ORDER BY created_time');
+        res.send(result.rows).status(200);
+    } catch (error) {
+        throw error;
+    }
+});
+
+// Get room info
+roomRoutes.get('/:id', authToken, async (req: Request, res: Response) => {
+    try {
+        const roomId = req.params.id;
+        const result = await pool.query('SELECT * FROM rooms WHERE id = $1', [roomId]);
         res.send(result.rows).status(200);
     } catch (error) {
         throw error;
@@ -17,10 +28,10 @@ roomRoutes.get('/', authToken, async (req: Request, res: Response) => {
 });
 
 // Get user rooms
-roomRoutes.get('/:id', authToken, async (req: Request, res: Response) => {
+roomRoutes.get('/userRooms/:id', authToken, async (req: Request, res: Response) => {
     try {
         const userId = req.params.id;
-        const result = await pool.query('SELECT * FROM rooms WHERE userId = $1', [userId]);
+        const result = await pool.query('SELECT * FROM rooms WHERE user1_id = $1 OR user2_id = $1', [userId]);
         res.send(result.rows).status(200);
     } catch (error) {
         throw error;
