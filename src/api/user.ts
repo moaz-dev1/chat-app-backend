@@ -17,15 +17,17 @@ userRoutes.get('/', authToken, async (req:Request, res:Response) => {
 });
 
 // Create new user
-userRoutes.post('/', authToken, async (req: Request, res: Response) => {
+userRoutes.post('/', async (req: Request, res: Response) => {
     try {
         const newUser: User = req.body;
         const salt = await bcrypt.genSalt();
         newUser.password = await bcrypt.hash(newUser.password, salt);
-        newUser.createdTime = new Date();
+
+        const userExist = await pool.query('SELECT * FROM users WHERE email = $1', [newUser.email]);
+        if(userExist.rows.length > 0) return res.send({message: 'Email already exist'}).status(400);
 
         const result = await pool.query(
-            'INSERT INTO users (first_name, last_name, password, email, created_time) VALUES ($1, $2, $3, $4, $5)',
+            'INSERT INTO users (first_name, last_name, email, password, created_time) VALUES ($1, $2, $3, $4, $5)',
             Object.values(newUser)
         );
 
@@ -40,7 +42,7 @@ userRoutes.get('/:id', authToken, async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
         const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
-        res.send(result.rows).status(200);
+        res.send(result.rows[0]).status(200);
     } catch (error) {
         throw error;
     }

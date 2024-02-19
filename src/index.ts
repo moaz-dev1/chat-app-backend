@@ -7,9 +7,11 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import messageRoutes from './api/message';
 import roomRoutes from './api/room';
+import httpServer from './chat_server/socket';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const SOCKET_PORT = process.env.SOCKET_PORT || 4000;
 
 dotenv.config();
 app.use(express.json());
@@ -41,6 +43,7 @@ app.use('/messages', messageRoutes);
 // Rooms API
 app.use('/rooms', roomRoutes);
 
+httpServer.listen(SOCKET_PORT, () => console.log("Live..."));
 
 
 // Refresh the server every 10 mins

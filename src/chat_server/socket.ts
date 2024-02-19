@@ -5,10 +5,7 @@ import User from "../models/user";
 import Message from "../models/message";
 import Room from "../models/room";
 
-const PORT = process.env.SOCKET_PORT || 3000;
 const app = express();
-
-
 const httpServer = http.createServer(app);
 
 const io = new SocketIOServer(httpServer, {
@@ -33,6 +30,7 @@ const getSocketId = (userId: number) => {
 }
 
 io.on('connection', (socket) => {
+    console.log('Connected');
     handleLogin(socket);
     handleRoomCreation(socket);
     handleJoinRoom(socket);
@@ -86,6 +84,7 @@ function handleJoinRoom(socket: Socket) {
 function handleMessage(socket: Socket) {
     try {
         socket.on('message to server', (message: Message) => {
+            console.log(message);
             io.to(String(message.room.id)).emit('message to client', message);
         });
     } catch (error) {
@@ -106,6 +105,5 @@ function handleDisconnect(socket: Socket) {
     }
 }
   
-httpServer.listen(PORT, () => console.log("Live..."));
-
+export default httpServer;
 

@@ -21,7 +21,7 @@ roomRoutes.get('/:id', authToken, async (req: Request, res: Response) => {
     try {
         const roomId = req.params.id;
         const result = await pool.query('SELECT * FROM rooms WHERE id = $1', [roomId]);
-        res.send(result.rows).status(200);
+        res.send(result.rows[0]).status(200);
     } catch (error) {
         throw error;
     }

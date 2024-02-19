@@ -16,12 +16,12 @@ authRoutes.post('/login', async (req: Request, res: Response) => {
             if(await bcrypt.compare(password, result.rows[0].password)) {
                 const token = createToken(result.rows[0].id);
                 res.setHeader('token', token);
-                res.send(token).status(200);
+                res.send({token: token}).status(200);
             }
-            else res.send('Incorrect password!').status(400);
+            else res.send({message: 'Incorrect password!'}).status(400);
         }
         else 
-            res.send('User not found!').status(400);
+            res.send({message: 'User not found!'}).status(400);
     } catch (error) {
         throw error;
     }
