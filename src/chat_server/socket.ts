@@ -16,12 +16,17 @@ const io = new SocketIOServer(httpServer, {
     },
 });
 
-let clientSocketId: any[] = [];
+interface Client {
+    userId: number;
+    socketId: string;
+}
+
+let allClients: Client[] = [];
 
 const getSocketId = (userId: number) => {
     let socketId = "";
-    clientSocketId.map((client) => {
-        if(client.user.id === userId) {
+    allClients.map((client: Client) => {
+        if(client.userId === userId) {
             socketId = client.socketId;
         }
     });
@@ -42,11 +47,10 @@ io.on('connection', (socket) => {
 function handleLogin(socket: Socket) {
     try {
         socket.on('login', (user: User) => {
-            clientSocketId = clientSocketId.filter((client) => client.userId != user.id);
-            clientSocketId.push({user: user, socketId: socket.id});
-            // console.log(clientSocketId);
+            allClients = allClients.filter((client) => client.userId != user.id);
+            allClients.push({userId: user.id, socketId: socket.id});
     
-            io.emit('show clients', clientSocketId);
+            io.emit('show clients', allClients);
         });
     } catch (error) {
         throw error;
@@ -57,10 +61,10 @@ function handleRoomCreation(socket: Socket) {
     try {
         socket.on('create room', (room: Room) => {
             socket.join(String(room.id));
-            const userSocketId = getSocketId(room.id);
-            if(userSocketId) {
-                socket.broadcast.to(userSocketId).emit('invite', room.id);
-                console.log("Room was created with id: " + room.id);
+            const otherSocketId = getSocketId(room.user2.id);
+            if(otherSocketId) {
+                socket.broadcast.to(otherSocketId).emit('invite', room);
+                console.log(socket.id + ' Created room: ' + room.id);
             }
             else 
                 console.log("Cannot find Socket Id");
@@ -74,7 +78,7 @@ function handleJoinRoom(socket: Socket) {
     try {
         socket.on('join', (room: Room) => {
             socket.join(String(room.id));
-            // console.log("Joined Successfully to room: " + room);
+            console.log(socket.id + ' Joined room: ' + room.id);
         });
     } catch (error) {
         throw error;
@@ -84,7 +88,7 @@ function handleJoinRoom(socket: Socket) {
 function handleMessage(socket: Socket) {
     try {
         socket.on('message to server', (message: Message) => {
-            console.log(message);
+            // console.log(socket.id + ' Sent: ' + message.content);
             io.to(String(message.room.id)).emit('message to client', message);
         });
     } catch (error) {
@@ -95,10 +99,9 @@ function handleMessage(socket: Socket) {
 function handleDisconnect(socket: Socket) {
     try {
         socket.on('disconnect', () => {
-            clientSocketId = clientSocketId.filter((client) => client.socketId != socket.id);
-            console.log(clientSocketId);
+            allClients = allClients.filter((client) => client.socketId != socket.id);
             console.log("Disconnected");
-            io.emit('show clients', clientSocketId);
+            io.emit('show clients', allClients);
         });
     } catch (error) {
         throw error;

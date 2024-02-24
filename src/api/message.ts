@@ -46,13 +46,12 @@ messageRoutes.get('/roomMessages/:roomId', authToken, async (req: Request, res: 
 messageRoutes.post('/', authToken, async (req: Request, res: Response) => {
     try {
         const newMessage = req.body;
-        newMessage.sentTime = new Date();
 
         const result = await pool.query('INSERT INTO messages (sender_id, receiver_id, content, sent_time, room_id) VALUES($1, $2, $3, $4, $5) RETURNING id',
             [newMessage.senderId, newMessage.receiverId, newMessage.content, newMessage.sentTime, newMessage.roomId]
         );
 
-        await pool.query('UPDATE rooms SET last_message_id = $1 WHERE rooms.id = $2', [result.rows[0].id, newMessage.roomId])
+        await pool.query('UPDATE rooms SET last_message_id = $1 WHERE rooms.id = $2', [result.rows[0].id, newMessage.roomId]);
         
         res.send({Message: 'New message sent successfully'}).status(200);
     } catch (error) {
