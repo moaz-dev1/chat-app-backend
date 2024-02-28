@@ -88,7 +88,6 @@ function handleJoinRoom(socket: Socket) {
 function handleMessage(socket: Socket) {
     try {
         socket.on('message to server', (message: Message) => {
-            // console.log(socket.id + ' Sent: ' + message.content);
             io.to(String(message.room.id)).emit('message to room', message);
         });
     } catch (error) {
