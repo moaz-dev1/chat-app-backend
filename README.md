@@ -1,4 +1,4 @@
-# Backend - Web Chat Application
+# Web Chat Application - Backend
 
 ## Overview
 The backend for the web chat application is developed using Node.js and Express.js. It provides the server-side logic for user authentication, message routing, and real-time communication via WebSocket using Socket.IO. PostgreSQL is used as the database to store user data and message history. The backend is developed using TypeScript for type safety and improved code maintainability.
