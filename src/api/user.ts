@@ -16,6 +16,17 @@ userRoutes.get('/', authToken, async (req:Request, res:Response) => {
     }
 });
 
+// Get all users except id
+userRoutes.get('/others/:id', authToken, async (req:Request, res:Response) => {
+    const id = req.params.id;
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE ID NOT IN($1) ORDER BY created_time', [id]);
+        res.send(result.rows).status(200);
+    } catch (error) {
+        throw error;
+    }
+});
+
 // Create new user
 userRoutes.post('/', async (req: Request, res: Response) => {
     try {
